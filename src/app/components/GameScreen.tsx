@@ -55,7 +55,7 @@ export default function GameScreen({
 
         {/* --- Player 1 Answer Area --- */}
         <div className="mb-6">
-          <p className="font-semibold text-lg text-rose-600 mb-2">{players.player1.name}'s Answer</p>
+          <p className="font-semibold text-lg text-rose-600 mb-2">{players.player1.name}&apos;s Answer</p>
           <div className="flex justify-center gap-4">
             <button
               onClick={() => onAnswer(1, true)}
@@ -78,7 +78,7 @@ export default function GameScreen({
 
         {/* --- Player 2 Answer Area --- */}
         <div>
-          <p className="font-semibold text-lg text-indigo-600 mb-2">{players.player2.name}'s Answer</p>
+          <p className="font-semibold text-lg text-indigo-600 mb-2">{players.player2.name}&apos;s Answer</p>
           <div className="flex justify-center gap-4">
             <button
               onClick={() => onAnswer(2, true)}
