@@ -23,7 +23,7 @@ export default function SetupScreen({ onStartGame }: SetupScreenProps) {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg text-center animate-fadeIn">
       <h1 className="text-3xl font-bold text-rose-500 mb-2">Couple Quiz</h1>
-      <p className="text-gray-500 mb-6">Let&apos;s see how well you know each other!</p>
+      <p className="text-gray-500 mb-6">Let&apos;s see how well we know each other!</p>
       <div className="space-y-4">
         <input
           type="text"
