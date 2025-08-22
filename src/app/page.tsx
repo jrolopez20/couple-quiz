@@ -79,7 +79,7 @@ export default function Home() {
       newAnswers.p2 = true;
       bothAnswered = newAnswers.p1 !== null;
     }
-    
+
     setAnswers(newAnswers);
 
     if (bothAnswered) {
@@ -128,10 +128,13 @@ export default function Home() {
   };
 
   return (
-    <main className="bg-rose-50 text-gray-800 flex items-center justify-center min-h-screen font-sans">
+    <main className="bg-rose-50 text-gray-800 flex flex-col items-center justify-center min-h-screen font-sans">
       <div className="w-full max-w-md mx-auto p-4">
         {renderScreen()}
       </div>
+      <footer className="w-full text-center p-4 text-sm text-gray-500">
+        © 2025 - Made with ❤️ for Elise.
+      </footer>
     </main>
   );
 }
