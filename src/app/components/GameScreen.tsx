@@ -89,6 +89,7 @@ export default function GameScreen({
                             onClick={() => onAnswer(1, true)}
                             disabled={answers.p1 !== null}
                             className="text-4xl p-3 rounded-full bg-green-100 hover:bg-green-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            title="Correct Answer"
                             aria-label="Correct Answer"
                         >
                             👍
@@ -97,6 +98,7 @@ export default function GameScreen({
                             onClick={() => onAnswer(1, false)}
                             disabled={answers.p1 !== null}
                             className="text-4xl p-3 rounded-full bg-red-100 hover:bg-red-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            title="Incorrect Answer"
                             aria-label="Incorrect Answer"
                         >
                             👎
@@ -112,6 +114,7 @@ export default function GameScreen({
                             onClick={() => onAnswer(2, true)}
                             disabled={answers.p2 !== null}
                             className="text-4xl p-3 rounded-full bg-green-100 hover:bg-green-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            title="Correct Answer"
                             aria-label="Correct Answer"
                         >
                             👍
@@ -120,6 +123,7 @@ export default function GameScreen({
                             onClick={() => onAnswer(2, false)}
                             disabled={answers.p2 !== null}
                             className="text-4xl p-3 rounded-full bg-red-100 hover:bg-red-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            title="Incorrect Answer"
                             aria-label="Incorrect Answer"
                         >
                             👎
