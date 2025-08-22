@@ -1,103 +1,159 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from 'react';
+import SetupScreen from './components/SetupScreen';
+import GameScreen from './components/GameScreen';
+import ResultsScreen from './components/ResultsScreen';
+
+// Define the structure of a question
+interface Question {
+  question: string;
+}
+
+// Define the structure for player data
+export interface Player {
+  name: string;
+  score: number;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // --- State Management ---
+  const [gameState, setGameState] = useState<'setup' | 'game' | 'results'>('setup');
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [players, setPlayers] = useState<{ player1: Player; player2: Player }>({
+    player1: { name: '', score: 0 },
+    player2: { name: '', score: 0 },
+  });
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // Store answers as an array of objects, e.g., [{ p1: 'John', p2: 'Jane' }]
+  const [answers, setAnswers] = useState<{ p1: string | null; p2: string | null }[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  // --- Effects ---
+
+  // Fetch questions from the JSON file on initial component mount
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch('/questions.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setQuestions(data);
+        // Initialize the answers array based on the number of questions
+        setAnswers(Array(data.length).fill({ p1: null, p2: null }));
+      } catch (error) {
+        console.error("Could not load questions:", error);
+        // You could add state here to show an error message to the user
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
+  // --- Game Logic Functions ---
+
+  /**
+   * Starts the game with the provided player names.
+   * @param player1Name - The name of the first player.
+   * @param player2Name - The name of the second player.
+   */
+  const handleStartGame = (player1Name: string, player2Name: string) => {
+    setPlayers({
+      player1: { name: player1Name, score: 0 },
+      player2: { name: player2Name, score: 0 },
+    });
+    setGameState('game');
+  };
+
+  /**
+   * Handles a player's answer, updates scores, and moves to the next question.
+   * @param playerNumber - 1 or 2, indicating which player answered.
+   * @param choice - The name chosen as the answer.
+   */
+  const handleAnswer = (playerNumber: 1 | 2, choice: string) => {
+    const newAnswers = [...answers];
+    const currentAnswer = { ...newAnswers[currentQuestionIndex] };
+
+    if (playerNumber === 1) {
+      currentAnswer.p1 = choice;
+    } else {
+      currentAnswer.p2 = choice;
+    }
+    newAnswers[currentQuestionIndex] = currentAnswer;
+    setAnswers(newAnswers);
+
+    // Check if both players have answered the current question
+    if (currentAnswer.p1 && currentAnswer.p2) {
+      // If answers match, both players get a point
+      if (currentAnswer.p1 === currentAnswer.p2) {
+        setPlayers(prev => ({
+          player1: { ...prev.player1, score: prev.player1.score + 1 },
+          player2: { ...prev.player2, score: prev.player2.score + 1 },
+        }));
+      }
+
+      // Move to the next question or end the game
+      setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+        } else {
+          setGameState('results');
+        }
+      }, 1500); // Wait a moment to show feedback
+    }
+  };
+
+  /**
+   * Resets the game to its initial state to play again.
+   */
+  const handlePlayAgain = () => {
+    setGameState('setup');
+    setCurrentQuestionIndex(0);
+    setPlayers({
+      player1: { name: '', score: 0 },
+      player2: { name: '', score: 0 },
+    });
+    setAnswers(Array(questions.length).fill({ p1: null, p2: null }));
+  };
+
+  // --- Render Logic ---
+
+  /**
+   * Renders the current screen based on the game state.
+   */
+  const renderScreen = () => {
+    switch (gameState) {
+      case 'game':
+        return (
+          <GameScreen
+            questions={questions}
+            currentQuestionIndex={currentQuestionIndex}
+            players={players}
+            answers={answers[currentQuestionIndex]}
+            onAnswer={handleAnswer}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        );
+      case 'results':
+        return (
+          <ResultsScreen
+            players={players}
+            onPlayAgain={handlePlayAgain}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        );
+      case 'setup':
+      default:
+        return (
+          <SetupScreen onStartGame={handleStartGame} />
+        );
+    }
+  };
+
+  return (
+    <main className="bg-rose-50 text-gray-800 flex items-center justify-center min-h-screen font-sans">
+      <div className="w-full max-w-md mx-auto p-4">
+        {renderScreen()}
+      </div>
+    </main>
   );
 }
