@@ -1,24 +1,29 @@
 "use client";
 
-import { Player } from '../page'; // Import the Player type
+import { Player } from '../page';
 
+// --- Type Definitions ---
 interface GameScreenProps {
-  questions: { question: string }[];
-  currentQuestionIndex: number;
+  question: string;
   players: { player1: Player; player2: Player };
-  answers: { p1: string | null; p2: string | null };
-  onAnswer: (playerNumber: 1 | 2, choice: string) => void;
+  onAnswer: (playerNumber: 1 | 2, wasCorrect: boolean) => void;
+  answers: { p1: boolean | null; p2: boolean | null };
+  questionNumber: number;
+  totalQuestions: number;
 }
 
-export default function GameScreen({ questions, currentQuestionIndex, players, answers, onAnswer }: GameScreenProps) {
-  const currentQuestion = questions[currentQuestionIndex];
-  const bothAnswered = answers.p1 && answers.p2;
+export default function GameScreen({
+  question,
+  players,
+  onAnswer,
+  answers,
+  questionNumber,
+  totalQuestions
+}: GameScreenProps) {
 
   const getFeedbackMessage = () => {
-    if (bothAnswered) {
-      return answers.p1 === answers.p2 
-        ? "You agree! Point for both!" 
-        : "You disagree! No points this round.";
+    if (answers.p1 && answers.p2) {
+      return 'Great! Moving to the next question...';
     }
     if (answers.p1) {
       return `Waiting for ${players.player2.name}...`;
@@ -26,14 +31,15 @@ export default function GameScreen({ questions, currentQuestionIndex, players, a
     if (answers.p2) {
       return `Waiting for ${players.player1.name}...`;
     }
-    return '';
+    return 'Both players, please answer!';
   };
 
   return (
     <div className="animate-fadeIn">
+      {/* --- Score and Progress Header --- */}
       <div className="text-center mb-4">
         <p className="text-xl font-semibold">
-          Question {currentQuestionIndex + 1} of {questions.length}
+          Question {questionNumber} of {totalQuestions}
         </p>
         <div className="flex justify-between items-center mt-2 text-lg">
           <div className="font-bold text-rose-500">{players.player1.name}: {players.player1.score}</div>
@@ -41,53 +47,61 @@ export default function GameScreen({ questions, currentQuestionIndex, players, a
         </div>
       </div>
 
-      <div className="quiz-container bg-white rounded-2xl shadow-lg p-6 overflow-hidden">
-        <div
-          className="slider flex transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentQuestionIndex * 100}%)` }}
-        >
-          {questions.map((q, index) => (
-            <div key={index} className="card flex-shrink-0 w-full text-center">
-              <p className="text-2xl font-medium mb-8 min-h-[6rem] flex items-center justify-center">
-                {q.question}
-              </p>
-              {index === currentQuestionIndex && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => onAnswer(1, players.player1.name)}
-                    disabled={!!answers.p1}
-                    className="answer-btn w-full bg-rose-200 text-rose-800 font-bold py-4 px-4 rounded-lg hover:bg-rose-300 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {players.player1.name}
-                  </button>
-                   <button
-                    onClick={() => onAnswer(1, players.player2.name)}
-                    disabled={!!answers.p1}
-                    className="answer-btn w-full bg-rose-200 text-rose-800 font-bold py-4 px-4 rounded-lg hover:bg-rose-300 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {players.player2.name}
-                  </button>
-                  <button
-                    onClick={() => onAnswer(2, players.player1.name)}
-                    disabled={!!answers.p2}
-                    className="answer-btn w-full bg-indigo-200 text-indigo-800 font-bold py-4 px-4 rounded-lg hover:bg-indigo-300 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {players.player1.name}
-                  </button>
-                  <button
-                    onClick={() => onAnswer(2, players.player2.name)}
-                    disabled={!!answers.p2}
-                    className="answer-btn w-full bg-indigo-200 text-indigo-800 font-bold py-4 px-4 rounded-lg hover:bg-indigo-300 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {players.player2.name}
-                  </button>
-                </div>
-              )}
-              <div className="mt-4 text-sm text-gray-500 min-h-[1.25rem]">
-                {index === currentQuestionIndex && getFeedbackMessage()}
-              </div>
-            </div>
-          ))}
+      {/* --- Main Game Card --- */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
+        <p className="text-2xl font-medium min-h-[6rem] flex items-center justify-center mb-8">
+          {question}
+        </p>
+
+        {/* --- Player 1 Answer Area --- */}
+        <div className="mb-6">
+          <p className="font-semibold text-lg text-rose-600 mb-2">{players.player1.name}'s Answer</p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => onAnswer(1, true)}
+              disabled={answers.p1 !== null}
+              className="text-4xl p-3 rounded-full bg-green-100 hover:bg-green-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              aria-label="Correct Answer"
+            >
+              👍
+            </button>
+            <button
+              onClick={() => onAnswer(1, false)}
+              disabled={answers.p1 !== null}
+              className="text-4xl p-3 rounded-full bg-red-100 hover:bg-red-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              aria-label="Incorrect Answer"
+            >
+              👎
+            </button>
+          </div>
+        </div>
+
+        {/* --- Player 2 Answer Area --- */}
+        <div>
+          <p className="font-semibold text-lg text-indigo-600 mb-2">{players.player2.name}'s Answer</p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => onAnswer(2, true)}
+              disabled={answers.p2 !== null}
+              className="text-4xl p-3 rounded-full bg-green-100 hover:bg-green-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              aria-label="Correct Answer"
+            >
+              👍
+            </button>
+            <button
+              onClick={() => onAnswer(2, false)}
+              disabled={answers.p2 !== null}
+              className="text-4xl p-3 rounded-full bg-red-100 hover:bg-red-200 transition transform hover:scale-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              aria-label="Incorrect Answer"
+            >
+              👎
+            </button>
+          </div>
+        </div>
+
+        {/* --- Feedback Message --- */}
+        <div className="mt-8 text-sm text-gray-500 min-h-[1.25rem]">
+          {getFeedbackMessage()}
         </div>
       </div>
     </div>

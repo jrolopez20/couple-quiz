@@ -1,9 +1,66 @@
 [
   {
-    "question": "Who is the better cook?"
+    "question": "What's my favorite color?"
   },
   {
-    "question": "Who is more likely to start an argument?"
+    "question": "What's my favorite activity to do with you?"
+  },
+  {
+    "question": "Where was I born?"
+  },
+  {
+    "question": "Which of my siblings is my favorite?"
+  },
+  {
+    "question": "What was my first impression of you?"
+  },
+  {
+    "question": "What other country would I like to visit and why?"
+  },
+  {
+    "question": "Where do I see us in five years?"
+  },
+  {
+    "question": "Who made the first move in our relationship?"
+  },
+  {
+    "question": "Where was our first kiss?"
+  },
+  {
+    "question": "When is my birthday?"
+  },
+  {
+    "question": "What do I value in relationships?"
+  },
+  {
+    "question": "Do I prefer coffee or tea?"
+  },
+  {
+    "question": "What food do I hate?"
+  },
+  {
+    "question": "What countries would I move to?"
+  },
+  {
+    "question": "What is my favorite animal?"
+  },
+  {
+    "question": "What's my favorite part of your body?"
+  },
+  {
+    "question": "Do I have any fetishes?"
+  },
+  {
+    "question": "What do I value in relationships?"
+  },
+  {
+    "question": "Is there a specific fantasy I want to try with you?"
+  },
+  {
+    "question": "Am I more dominant or submissive?"
+  },
+  {
+    "question": "What's my favorite position?"
   },
   {
     "question": "Who is the messier one?"
@@ -12,27 +69,24 @@
     "question": "Who is more romantic?"
   },
   {
-    "question": "Who is more likely to get lost?"
-  },
-  {
-    "question": "Who has the better taste in music?"
-  },
-  {
-    "question": "Who is the bigger baby when sick?"
-  },
-  {
     "question": "Who is more likely to hog the blanket?"
-  },
-  {
-    "question": "Who is the first to apologize after a fight?"
-  },
-  {
-    "question": "Who is more likely to plan a surprise date?"
   },
   {
     "question": "Who is the better driver?"
   },
   {
-    "question": "Who spends more time getting ready?"
+    "question": "What’s my least favorite chore to do around the house?"
+  },
+  {
+    "question": "What’s our song?"
+  },
+  {
+    "question": "What’s the most romantic thing we’ve ever done together?"
+  },
+  {
+    "question": "What’s the naughtiest thing we’ve done together?"
+  },
+  {
+    "question": "What’s the best compliment you’ve ever given me?"
   }
 ]

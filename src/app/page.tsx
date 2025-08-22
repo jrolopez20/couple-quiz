@@ -5,12 +5,11 @@ import SetupScreen from './components/SetupScreen';
 import GameScreen from './components/GameScreen';
 import ResultsScreen from './components/ResultsScreen';
 
-// Define the structure of a question
+// --- Type Definitions ---
 interface Question {
   question: string;
 }
 
-// Define the structure for player data
 export interface Player {
   name: string;
   score: number;
@@ -25,8 +24,9 @@ export default function Home() {
     player2: { name: '', score: 0 },
   });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  // Store answers as an array of objects, e.g., [{ p1: 'John', p2: 'Jane' }]
-  const [answers, setAnswers] = useState<{ p1: string | null; p2: string | null }[]>([]);
+  // Tracks who has answered the current question: { p1: boolean, p2: boolean }
+  const [answers, setAnswers] = useState<{ p1: boolean | null; p2: boolean | null }>({ p1: null, p2: null });
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // --- Effects ---
 
@@ -35,29 +35,18 @@ export default function Home() {
     const fetchQuestions = async () => {
       try {
         const response = await fetch('/questions.json');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setQuestions(data);
-        // Initialize the answers array based on the number of questions
-        setAnswers(Array(data.length).fill({ p1: null, p2: null }));
       } catch (error) {
         console.error("Could not load questions:", error);
-        // You could add state here to show an error message to the user
       }
     };
-
     fetchQuestions();
   }, []);
 
   // --- Game Logic Functions ---
 
-  /**
-   * Starts the game with the provided player names.
-   * @param player1Name - The name of the first player.
-   * @param player2Name - The name of the second player.
-   */
   const handleStartGame = (player1Name: string, player2Name: string) => {
     setPlayers({
       player1: { name: player1Name, score: 0 },
@@ -67,85 +56,74 @@ export default function Home() {
   };
 
   /**
-   * Handles a player's answer, updates scores, and moves to the next question.
+   * Handles a player's answer.
    * @param playerNumber - 1 or 2, indicating which player answered.
-   * @param choice - The name chosen as the answer.
+   * @param wasCorrect - true if they clicked '👍', false for '👎'.
    */
-  const handleAnswer = (playerNumber: 1 | 2, choice: string) => {
-    const newAnswers = [...answers];
-    const currentAnswer = { ...newAnswers[currentQuestionIndex] };
+  const handleAnswer = (playerNumber: 1 | 2, wasCorrect: boolean) => {
+    if (isTransitioning) return; // Prevent clicks during transitions
 
-    if (playerNumber === 1) {
-      currentAnswer.p1 = choice;
-    } else {
-      currentAnswer.p2 = choice;
+    const newAnswers = { ...answers };
+    let bothAnswered = false;
+
+    if (playerNumber === 1 && newAnswers.p1 === null) {
+      if (wasCorrect) {
+        setPlayers(p => ({ ...p, player1: { ...p.player1, score: p.player1.score + 1 } }));
+      }
+      newAnswers.p1 = true;
+      bothAnswered = newAnswers.p2 !== null;
+    } else if (playerNumber === 2 && newAnswers.p2 === null) {
+      if (wasCorrect) {
+        setPlayers(p => ({ ...p, player2: { ...p.player2, score: p.player2.score + 1 } }));
+      }
+      newAnswers.p2 = true;
+      bothAnswered = newAnswers.p1 !== null;
     }
-    newAnswers[currentQuestionIndex] = currentAnswer;
+    
     setAnswers(newAnswers);
 
-    // Check if both players have answered the current question
-    if (currentAnswer.p1 && currentAnswer.p2) {
-      // If answers match, both players get a point
-      if (currentAnswer.p1 === currentAnswer.p2) {
-        setPlayers(prev => ({
-          player1: { ...prev.player1, score: prev.player1.score + 1 },
-          player2: { ...prev.player2, score: prev.player2.score + 1 },
-        }));
-      }
-
-      // Move to the next question or end the game
+    if (bothAnswered) {
+      setIsTransitioning(true);
       setTimeout(() => {
+        // Move to the next question or end the game
         if (currentQuestionIndex < questions.length - 1) {
-          setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+          setCurrentQuestionIndex(i => i + 1);
+          setAnswers({ p1: null, p2: null }); // Reset answers for next question
         } else {
           setGameState('results');
         }
-      }, 1500); // Wait a moment to show feedback
+        setIsTransitioning(false);
+      }, 1500); // Wait a moment before moving on
     }
   };
 
-  /**
-   * Resets the game to its initial state to play again.
-   */
   const handlePlayAgain = () => {
     setGameState('setup');
     setCurrentQuestionIndex(0);
-    setPlayers({
-      player1: { name: '', score: 0 },
-      player2: { name: '', score: 0 },
-    });
-    setAnswers(Array(questions.length).fill({ p1: null, p2: null }));
+    setPlayers({ player1: { name: '', score: 0 }, player2: { name: '', score: 0 } });
+    setAnswers({ p1: null, p2: null });
+    setIsTransitioning(false);
   };
 
   // --- Render Logic ---
-
-  /**
-   * Renders the current screen based on the game state.
-   */
   const renderScreen = () => {
     switch (gameState) {
       case 'game':
         return (
           <GameScreen
-            questions={questions}
-            currentQuestionIndex={currentQuestionIndex}
+            question={questions[currentQuestionIndex]?.question}
             players={players}
-            answers={answers[currentQuestionIndex]}
             onAnswer={handleAnswer}
+            answers={answers}
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
           />
         );
       case 'results':
-        return (
-          <ResultsScreen
-            players={players}
-            onPlayAgain={handlePlayAgain}
-          />
-        );
+        return <ResultsScreen players={players} onPlayAgain={handlePlayAgain} />;
       case 'setup':
       default:
-        return (
-          <SetupScreen onStartGame={handleStartGame} />
-        );
+        return <SetupScreen onStartGame={handleStartGame} />;
     }
   };
 
